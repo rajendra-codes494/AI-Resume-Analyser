@@ -1,0 +1,19 @@
+# Requirements for AI Resume Analyzer
+
+# Web interface library
+streamlit
+
+# PDF text extraction library
+pdfplumber
+
+# Data analysis and handling tabular data
+pandas
+
+# Machine learning library used for text similarity (TF-IDF vectorizer)
+scikit-learn
+
+# Google Gemini API library to get AI feedback
+google-generativeai
+
+# Optional but recommended library to manage API keys securely from a .env file
+python-dotenv
