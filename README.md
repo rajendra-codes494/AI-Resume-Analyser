@@ -8,6 +8,9 @@
 An **AI-powered Executive ATS (Applicant Tracking System) Evaluation Dashboard** built with Python and Streamlit. It scores resumes against job descriptions using structural skill matching, TF-IDF semantic vector similarity, and Google Gemini AI insights.
 
 ---
+## 🤝 UI
+<img width="2532" height="1063" alt="Screenshot 2026-10-08 120104" src="https://github.com/user-attachments/assets/7951ef63-4c05-4fa4-bbba-3817dd25a0d8" />
+
 
 ## 🌟 Key Features
 
