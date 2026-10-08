@@ -5,278 +5,641 @@ from dotenv import load_dotenv
 # Import helper functions from our custom modules
 from resume_parser import extract_text_from_pdf
 from ats_score import analyze_resume
-from gemini_feedback import get_gemini_feedback
+from gemini_feedback import get_gemini_feedback, generate_job_description
 from utils import extract_text_from_file
 
-# Load environment variables (such as GEMINI_API_KEY) from .env file
+# Load environment variables
 load_dotenv()
 
-# Set Streamlit page configuration (title, icon, layout)
+# Set Streamlit page configuration
 st.set_page_config(
-    page_title="AI Resume Analyzer",
-    page_icon="💼",
+    page_title="AI Resume Analyzer | Organic Moody Luxury",
+    page_icon="✦",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Inject Custom CSS to give the app a premium, sleek look
+# Inject Custom CSS & JS for Organic Warm Espresso & Botanical Leaf Aesthetics
 st.markdown("""
-    <style>
-    /* Google Fonts Import */
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
-    /* Apply custom font globally */
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+/* Base application background: Deep rich black to warm espresso gradient */
+.stApp {
+    background: radial-gradient(circle at 82% 18%, #2A1A14 0%, #170E0B 45%, #0A0605 100%) !important;
+    color: #E3D7CC !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
 
-    /* Main Title Styling with red/coral gradient */
-    .main-title {
-        font-family: 'Outfit', sans-serif;
-        font-weight: 800;
-        background: linear-gradient(135deg, #FF4B4B 0%, #FF8F8F 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 2.8rem;
-        margin-bottom: 2px;
-        text-align: center;
-    }
-    
-    /* Subtitle Styling */
-    .main-subtitle {
-        color: #7f8c8d;
-        font-size: 1.1rem;
-        text-align: center;
-        margin-bottom: 35px;
-    }
+/* Botanical Leaves Silhouette Overlay on Top Right */
+.stApp::before {
+    content: "";
+    position: fixed;
+    top: 0; right: 0;
+    width: 680px; height: 680px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='%23080504' opacity='0.78'%3E%3Cpath d='M800 0 Q680 120 540 320 Q690 220 800 0 Z'/%3E%3Cpath d='M800 120 Q640 260 480 480 Q660 360 800 120 Z'/%3E%3Cpath d='M720 0 Q580 160 460 360 Q600 240 720 0 Z'/%3E%3Cpath d='M800 280 Q660 420 520 620 Q700 500 800 280 Z'/%3E%3Cpath d='M620 0 Q480 180 380 420 Q520 280 620 0 Z'/%3E%3Cpath d='M800 420 Q680 560 600 750 Q740 640 800 420 Z'/%3E%3C/g%3E%3Cg fill='%231b110c' opacity='0.55'%3E%3Cpath d='M760 40 Q620 180 500 380 Q640 260 760 40 Z'/%3E%3Cpath d='M780 200 Q620 360 480 580 Q660 440 780 200 Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top right;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.88;
+}
 
-    /* Section Header Styling */
-    .section-header {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.4rem;
-        font-weight: 700;
-        border-bottom: 2px solid #FF4B4B30;
-        padding-bottom: 8px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-        color: #2c3e50;
-    }
+/* Sidebar styling */
+[data-testid="stSidebar"] {
+    background-color: #0E0907 !important;
+    border-right: 1px solid rgba(200, 122, 87, 0.2) !important;
+}
+[data-testid="stSidebar"] * {
+    color: #A69B91;
+}
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+    color: #E3D7CC;
+}
 
-    /* Beautiful Score Cards */
-    .score-card {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 24px;
-        text-align: center;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    }
-    .score-number {
-        font-family: 'Outfit', sans-serif;
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: #38bdf8;
-        margin: 5px 0;
-    }
-    .score-label {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        font-weight: 600;
-    }
-    </style>
+/* Headers */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Space Grotesk', sans-serif;
+    color: #F2E8DF !important;
+    font-weight: 700;
+}
+
+/* Section headers for Gemini AI output */
+h3 {
+    color: #E6A17E !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 1.15rem !important;
+    margin-top: 32px !important;
+    margin-bottom: 16px !important;
+    border-left: 3px solid #C87A57 !important;
+    padding-left: 14px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+}
+
+/* Frosted Glassmorphism Containers & Inputs */
+.stTextInput input, .stTextArea textarea,
+.stTextInput > div > div > input, .stTextArea > div > textarea {
+    background-color: rgba(26, 17, 14, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    color: #F5EBE1 !important;
+    border: 1px solid rgba(200, 122, 87, 0.35) !important;
+    border-radius: 10px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+}
+
+/* High-contrast peach/copper placeholder text */
+::placeholder,
+::-webkit-input-placeholder,
+::-moz-placeholder,
+:-ms-input-placeholder,
+.stTextArea textarea::placeholder,
+.stTextInput input::placeholder {
+    color: rgba(227, 215, 204, 0.45) !important;
+    opacity: 1 !important;
+}
+
+.stTextInput input:focus, .stTextArea textarea:focus,
+.stTextInput > div > div > input:focus, .stTextArea > div > textarea:focus {
+    border-color: #E6A17E !important;
+    box-shadow: 0 0 20px rgba(230, 161, 126, 0.3) !important;
+}
+
+/* Radio Buttons & Option Labels */
+label, .stRadio label, [data-testid="stRadio"] label, div[role="radiogroup"] label, div[role="radiogroup"] p {
+    color: #E3D7CC !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.92rem !important;
+    letter-spacing: 0.5px;
+}
+
+/* Radio active state dot indicator in glowing peach/copper */
+div[role="radiogroup"] [data-checked="true"] div {
+    background-color: #E6A17E !important;
+    border-color: #E6A17E !important;
+    box-shadow: 0 0 10px rgba(230, 161, 126, 0.5) !important;
+}
+
+/* File Uploader Dropzone - Frosted Glass Dark Espresso */
+[data-testid="stFileUploader"],
+[data-testid="stFileUploader"] section,
+[data-testid="stFileUploadDropzone"],
+[data-testid="stFileUploadDropzone"] > div,
+[data-testid="stFileUploaderDropzone"],
+.stFileUploader section {
+    background-color: rgba(26, 17, 14, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px dashed rgba(200, 122, 87, 0.4) !important;
+    border-radius: 12px !important;
+    color: #F5EBE1 !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-testid="stFileUploader"] section:hover,
+[data-testid="stFileUploadDropzone"]:hover {
+    border-color: #E6A17E !important;
+    background-color: rgba(36, 23, 19, 0.75) !important;
+    box-shadow: 0 0 25px rgba(200, 122, 87, 0.25) !important;
+}
+
+[data-testid="stFileUploader"] *,
+[data-testid="stFileUploadDropzone"] *,
+[data-testid="stFileUploaderDropzone"] *,
+.stFileUploader * {
+    color: #E3D7CC !important;
+}
+
+[data-testid="stFileUploader"] small,
+[data-testid="stFileUploadDropzone"] small,
+[data-testid="stFileUploaderDropzone"] small {
+    color: #B3A69B !important;
+}
+
+/* Upload Button inside File Dropzone - Warm Copper fill with Peach Text */
+[data-testid="stFileUploader"] button,
+[data-testid="stFileUploadDropzone"] button,
+[data-testid="stFileUploaderDropzone"] button {
+    background-color: rgba(180, 115, 80, 0.35) !important;
+    color: #F2B897 !important;
+    border: 1px solid rgba(230, 161, 126, 0.5) !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    padding: 7px 18px !important;
+    transition: all 0.25s ease !important;
+}
+
+[data-testid="stFileUploader"] button *,
+[data-testid="stFileUploadDropzone"] button *,
+[data-testid="stFileUploaderDropzone"] button * {
+    color: #F2B897 !important;
+}
+
+[data-testid="stFileUploader"] button:hover,
+[data-testid="stFileUploadDropzone"] button:hover {
+    background-color: #C87A57 !important;
+    color: #150D0A !important;
+}
+[data-testid="stFileUploader"] button:hover *,
+[data-testid="stFileUploadDropzone"] button:hover * {
+    color: #150D0A !important;
+}
+
+/* Radio Buttons Container */
+.stRadio > div {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+/* Secondary Buttons */
+.stButton > button {
+    background-color: rgba(26, 17, 14, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    color: #F2B897 !important;
+    border: 1px solid rgba(200, 122, 87, 0.35) !important;
+    border-radius: 8px !important;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600 !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.stButton > button:hover {
+    border-color: #E6A17E !important;
+    color: #F5EBE1 !important;
+    box-shadow: 0 0 18px rgba(200, 122, 87, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+/* MAIN ACTION BUTTON: Luminous Warm Metallic Copper Gradient Bar */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(90deg, #7A432F 0%, #B85C38 30%, #F2B897 50%, #B85C38 70%, #7A432F 100%) !important;
+    color: #150E0B !important;
+    border: 1px solid rgba(242, 184, 151, 0.4) !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.05rem !important;
+    padding: 12px 24px !important;
+    border-radius: 10px !important;
+    height: 56px !important;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 32px rgba(200, 122, 87, 0.35) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(90deg, #B85C38 0%, #E6A17E 30%, #F8E5D8 50%, #E6A17E 70%, #B85C38 100%) !important;
+    color: #150E0B !important;
+    box-shadow: 0 12px 40px rgba(230, 161, 126, 0.55) !important;
+    transform: translateY(-2px);
+}
+
+/* Organic Warm Custom Classes */
+.brand-area {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #F5EBE1;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(200, 122, 87, 0.25);
+    padding-bottom: 15px;
+}
+.brand-accent {
+    background: linear-gradient(135deg, #F2B897, #E6A17E, #C87A57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.status-card {
+    background-color: rgba(26, 17, 14, 0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(200, 122, 87, 0.25);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.status-connected {
+    color: #48C78E;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+.status-disconnected {
+    color: #E76F51;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(26, 17, 14, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(200, 122, 87, 0.45);
+    color: #F2B897;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(200, 122, 87, 0.2);
+}
+.hero-title {
+    font-family: 'Outfit', 'Space Grotesk', sans-serif;
+    font-size: 3.8rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    color: #F5EBE1;
+    letter-spacing: -1px;
+}
+.hero-title-highlight {
+    background: linear-gradient(135deg, #F8E5D8, #F2B897, #E6A17E, #C87A57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(200, 122, 87, 0.35));
+}
+.hero-subtitle {
+    font-size: 1.18rem;
+    color: #C8BFB5;
+    margin-bottom: 35px;
+    font-weight: 400;
+}
+.panel-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #E6A17E !important;
+    letter-spacing: 1.5px;
+    margin-bottom: 15px;
+}
+.panel-number {
+    color: #F2B897 !important;
+    margin-right: 8px;
+}
+
+/* Frosted Glass Cards for Results Dashboard */
+.metric-card-primary, .metric-card-secondary, .skills-card {
+    position: relative;
+    background-color: rgba(26, 17, 14, 0.65) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(200, 122, 87, 0.3) !important;
+    border-radius: 14px !important;
+    padding: 26px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
+}
+.metric-card-primary:hover, .metric-card-secondary:hover, .skills-card:hover {
+    border-color: rgba(230, 161, 126, 0.6) !important;
+    box-shadow: 0 0 30px rgba(200, 122, 87, 0.25), 0 12px 35px rgba(0,0,0,0.65) !important;
+    transform: translateY(-3px);
+}
+
+.metric-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: #B3A69B;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+.metric-value-large {
+    font-family: 'Outfit', sans-serif;
+    font-size: 4.2rem;
+    font-weight: 800;
+    color: #F2B897;
+    line-height: 1;
+    text-shadow: 0 0 25px rgba(200, 122, 87, 0.4);
+}
+.metric-value-small {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: #F5EBE1;
+    line-height: 1;
+}
+.custom-progress-container {
+    width: 100%;
+    background-color: rgba(40, 26, 21, 0.8);
+    border: 1px solid rgba(200, 122, 87, 0.2);
+    border-radius: 4px;
+    height: 8px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+.custom-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #8C523B, #C87A57, #F2B897);
+    border-radius: 4px;
+    box-shadow: 0 0 14px rgba(200, 122, 87, 0.5);
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.skills-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    color: #F5EBE1;
+}
+.skill-tag {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin: 4px;
+    border: 1px solid;
+    transition: all 0.2s ease;
+}
+.skill-tag:hover {
+    transform: translateY(-1px);
+}
+.skill-tag-matched { background-color: rgba(72, 199, 142, 0.1); border-color: rgba(72, 199, 142, 0.4); color: #48C78E; }
+.skill-tag-missing { background-color: rgba(231, 111, 81, 0.1); border-color: rgba(231, 111, 81, 0.4); color: #E76F51; }
+.skill-tag-extra { background-color: rgba(230, 161, 126, 0.1); border-color: rgba(230, 161, 126, 0.4); color: #F2B897; }
+
+/* Hide default streamlit UI headers */
+header {visibility: hidden;}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style>
 """, unsafe_allow_html=True)
 
+
 # ----------------- SIDEBAR CONFIGURATION -----------------
-st.sidebar.markdown("### ⚙️ API Configuration")
-st.sidebar.markdown(
-    "This application uses **Google Gemini API** for personalized AI suggestions. "
-    "Please provide your API key below."
-)
-
-# Check if Gemini API key exists in environment variables (loaded from .env)
-env_api_key = os.getenv("GEMINI_API_KEY")
-
-if not env_api_key:
-    st.sidebar.warning("⚠️ GEMINI_API_KEY not found in `.env` file.")
-    # Provide a text input for user to type/paste their API key directly
-    user_api_key = st.sidebar.text_input("Enter Gemini API Key:", type="password")
-    if user_api_key:
-        os.environ["GEMINI_API_KEY"] = user_api_key
-        st.sidebar.success("✅ API Key configured successfully for this session!")
-else:
-    st.sidebar.success("✅ Gemini API Key loaded from `.env` file!")
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📖 About the Project")
-st.sidebar.markdown(
-    "**AI Resume Analyzer** is a beginner-friendly ATS scoring and AI feedback application. "
-    "It uses keyword matching and semantic analysis to score resumes, and Gemini AI for resume recommendations."
-)
+with st.sidebar:
+    st.markdown("""
+        <div class="brand-area">
+            ◈ AI RESUME<br><span class="brand-accent">ANALYZER</span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div class='panel-title'>AI CONFIGURATION</div>", unsafe_allow_html=True)
+    
+    env_api_key = os.getenv("GEMINI_API_KEY")
+    if not env_api_key:
+        st.markdown("""
+            <div class="status-card">
+                <div class="status-disconnected">○ API KEY REQUIRED</div>
+            </div>
+        """, unsafe_allow_html=True)
+        user_api_key = st.text_input("Enter Gemini API Key:", type="password")
+        if user_api_key:
+            os.environ["GEMINI_API_KEY"] = user_api_key
+            st.success("API Key configured for this session")
+    else:
+        st.markdown("""
+            <div class="status-card">
+                <div class="status-connected">✓ API KEY CONNECTED</div>
+                <div style="font-size: 0.8rem; color: #B3A69B; margin-top: 5px;">Loaded from environment</div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='panel-title'>ABOUT SYSTEM</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class="status-card" style="color: #C8BFB5; font-size: 0.88rem; line-height: 1.6;">
+            AI Resume Analyzer uses:<br>
+            • Executive ATS scoring<br>
+            • Keyword matching<br>
+            • Semantic vector similarity<br>
+            • Gemini AI recommendations
+        </div>
+    """, unsafe_allow_html=True)
 
 
 # ----------------- MAIN APP USER INTERFACE -----------------
 
-# Render the application title and subtitle
-st.markdown("<div class='main-title'>AI Resume Analyzer</div>", unsafe_allow_html=True)
-st.markdown("<div class='main-subtitle'>Optimize your resume for Applicant Tracking Systems (ATS) with AI-powered feedback</div>", unsafe_allow_html=True)
+st.markdown("""
+    <div class="hero-badge">+ EXECUTIVE ATS INTELLIGENCE</div>
+    <div class="hero-title">AI RESUME <span class="hero-title-highlight">ANALYZER</span></div>
+    <div class="hero-subtitle">Optimize your professional profile with AI-driven ATS precision.</div>
+    <div style="height: 1px; background: linear-gradient(90deg, rgba(200, 122, 87, 0.4), rgba(200, 122, 87, 0.05)); margin-bottom: 40px;"></div>
+""", unsafe_allow_html=True)
 
-# Create two columns for uploading inputs (Resume & Job Description)
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown("<div class='section-header'>📄 1. Upload Resume</div>", unsafe_allow_html=True)
-    resume_file = st.file_uploader("Upload your resume (PDF format only):", type=["pdf"])
+    st.markdown("<div class='panel-title'><span class='panel-number'>01</span> UPLOAD RESUME</div>", unsafe_allow_html=True)
+    resume_file = st.file_uploader("Upload your resume for ATS analysis. (PDF only)", type=["pdf"], label_visibility="collapsed")
+    if resume_file:
+        st.markdown(f"""
+            <div style="background-color: rgba(26, 17, 14, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(200, 122, 87, 0.45); padding: 15px; border-radius: 10px; margin-top: -15px; color: #F5EBE1;">
+                <span style="color: #F2B897; margin-right: 8px;">✓</span> <b>{resume_file.name}</b> ({(resume_file.size/1024):.1f} KB)
+            </div>
+        """, unsafe_allow_html=True)
 
 with col2:
-    st.markdown("<div class='section-header'>💼 2. Job Description</div>", unsafe_allow_html=True)
+    st.markdown("<div class='panel-title'><span class='panel-number'>02</span> TARGET JOB DESCRIPTION</div>", unsafe_allow_html=True)
     
-    # Option to Paste Text or Upload File
+    if "jd_text" not in st.session_state:
+        st.session_state.jd_text = ""
+        
     jd_mode = st.radio(
-        "Choose how to input the Job Description:",
-        options=["Paste Text", "Upload File (.txt or .pdf)"]
+        "Choose Input Method",
+        options=["Paste Text", "Upload File", "Auto-Generate with AI"],
+        horizontal=True,
+        label_visibility="collapsed"
     )
     
-    jd_text = ""
     if jd_mode == "Paste Text":
         jd_text = st.text_area(
-            "Paste the job description here:",
+            "Paste Job Description",
+            value=st.session_state.jd_text,
             height=200,
-            placeholder="Paste requirements, duties, and skills needed for the job..."
+            label_visibility="collapsed",
+            placeholder="Paste requirements, duties, and skills needed for the target role..."
         )
-    else:
-        jd_file = st.file_uploader("Upload Job Description file:", type=["txt", "pdf"])
+        st.session_state.jd_text = jd_text
+        
+    elif jd_mode == "Upload File":
+        jd_file = st.file_uploader("Upload Job Description (.txt or .pdf)", type=["txt", "pdf"], label_visibility="collapsed")
         if jd_file is not None:
-            # Extract text from the uploaded txt/pdf file
-            jd_text = extract_text_from_file(jd_file)
-            if jd_text:
+            extracted_text = extract_text_from_file(jd_file)
+            if extracted_text:
+                st.session_state.jd_text = extracted_text
                 st.success("✅ Job Description parsed successfully!")
+        jd_text = st.session_state.jd_text
+        if jd_text:
+            jd_text = st.text_area("Preview (Edit if needed):", value=jd_text, height=150, label_visibility="collapsed")
+            st.session_state.jd_text = jd_text
+            
+    elif jd_mode == "Auto-Generate with AI":
+        c_title, c_exp = st.columns(2)
+        with c_title:
+            job_title = st.text_input("JOB TITLE", placeholder="e.g. Senior Software Engineer")
+        with c_exp:
+            experience = st.text_input("EXPECTED EXPERIENCE", placeholder="e.g. 5+ years")
+            
+        if st.button("✦ GENERATE JOB DESCRIPTION"):
+            if not job_title or not experience:
+                st.warning("Please provide both Job Title and Expected Experience.")
+            else:
+                with st.spinner("Generating job description..."):
+                    generated_jd = generate_job_description(job_title, experience)
+                    st.session_state.jd_text = generated_jd
+        
+        jd_text = st.text_area(
+            "Review and Edit Job Description:",
+            value=st.session_state.jd_text,
+            height=150,
+            label_visibility="collapsed"
+        )
+        st.session_state.jd_text = jd_text
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 35px;'></div>", unsafe_allow_html=True)
 
-# Center-aligned Analyze button
-analyze_button = st.button("🚀 Analyze Resume", use_container_width=True)
+# Center-aligned Main Action Button (Luminous Warm Metallic Copper Gradient Bar)
+analyze_button = st.button("✦ ANALYZE RESUME →", type="primary", use_container_width=True)
 
-# Helper function to generate colored HTML tags for skills
-def render_skills_tags(skills, color_hex):
+# Helper function for rendering skill badges
+def render_skill_badges(skills, tag_class):
     if not skills:
-        return "<p style='color: #7f8c8d; font-style: italic;'>None found.</p>"
-    
-    tags = ""
-    for skill in skills:
-        tags += f"""
-        <span style="
-            display: inline-block;
-            background-color: {color_hex}15;
-            color: {color_hex};
-            border: 1px solid {color_hex}50;
-            border-radius: 20px;
-            padding: 4px 12px;
-            margin: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        ">{skill}</span>
-        """
-    return tags
+        return "<span style='color: #B3A69B; font-style: italic;'>None detected</span>"
+    return "".join([f"<span class='skill-tag {tag_class}'>{s}</span>" for s in skills])
 
-# Check if analyze button is pressed
 if analyze_button:
-    # 1. Validation: Ensure both inputs are provided
     if not resume_file:
-        st.error("❌ Please upload a resume PDF file first.")
+        st.error("Please upload a resume PDF file first.")
     elif not jd_text or len(jd_text.strip()) == 0:
-        st.error("❌ Please provide a job description (either paste it or upload a file).")
+        st.error("Please provide a job description.")
     else:
-        # Show a processing spinner
-        with st.spinner("Analyzing resume and fetching AI suggestions..."):
-            # 2. Extract text from resume
+        st.markdown("<div style='text-align: center; color: #F2B897; margin: 25px 0; font-weight: 700; letter-spacing: 2px;'>✦ EVALUATING EXECUTIVE ATS MATCH...</div>", unsafe_allow_html=True)
+        
+        with st.spinner("Processing structural parsing & semantic analysis..."):
             resume_text = extract_text_from_pdf(resume_file)
             
             if not resume_text:
-                st.error("❌ Could not extract text from the resume. Please ensure it is not a scanned image PDF.")
+                st.error("Could not extract text from the resume.")
             else:
-                # 3. Perform Match Analysis
                 analysis_results = analyze_resume(resume_text, jd_text)
-                
-                # 4. Fetch Gemini AI suggestions
                 ai_suggestions = get_gemini_feedback(resume_text, jd_text)
                 
-                # 5. Display Results
-                st.markdown("<div class='section-header'>📊 Analysis Results</div>", unsafe_allow_html=True)
+                # Results UI Dashboard
+                st.markdown("""
+                    <div style="margin-top: 50px;">
+                        <span class="hero-badge" style="border-color: #E6A17E; color: #F2B897; margin-bottom: 10px;">✦ ANALYSIS COMPLETE</span>
+                        <div class="panel-title" style="font-size: 1.2rem; color: #F5EBE1;">ATS EVALUATION RESULTS</div>
+                    </div>
+                """, unsafe_allow_html=True)
                 
-                # Create 3 columns for metrics / scores
-                metric_col1, metric_col2, metric_col3 = st.columns(3)
+                # Top Metrics
+                col_res1, col_res2 = st.columns([1.2, 1], gap="large")
                 
-                # Column 1: Overall ATS Score (weighted)
-                with metric_col1:
-                    st.markdown(
-                        f"""
-                        <div class='score-card'>
-                            <div class='score-label'>Overall ATS Score</div>
-                            <div class='score-number'>{analysis_results['ats_score']}%</div>
+                with col_res1:
+                    st.markdown(f"""
+                        <div class="metric-card-primary">
+                            <div class="metric-label">OVERALL ATS SCORE</div>
+                            <div class="metric-value-large">{analysis_results['ats_score']}%</div>
+                            <div class="custom-progress-container">
+                                <div class="custom-progress-bar" style="width: {analysis_results['ats_score']}%;"></div>
+                            </div>
+                            <div style="color: #B3A69B; font-size: 0.88rem; text-align: right; margin-top: -5px;">ATS COMPATIBILITY RATING</div>
                         </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
+                    """, unsafe_allow_html=True)
                 
-                # Column 2: Keyword matching percentage
-                with metric_col2:
-                    st.markdown(
-                        f"""
-                        <div class='score-card'>
-                            <div class='score-label'>Keyword Match</div>
-                            <div class='score-number'>{int(analysis_results['keyword_score'])}%</div>
+                with col_res2:
+                    st.markdown(f"""
+                        <div class="metric-card-secondary" style="margin-bottom: 20px;">
+                            <div class="metric-label">KEYWORD DENSITY MATCH</div>
+                            <div class="metric-value-small">{int(analysis_results['keyword_score'])}%</div>
                         </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
-                
-                # Column 3: Cosine Similarity (TF-IDF semantic matching)
-                with metric_col3:
-                    st.markdown(
-                        f"""
-                        <div class='score-card'>
-                            <div class='score-label'>Semantic Similarity</div>
-                            <div class='score-number'>{int(analysis_results['cosine_score'])}%</div>
+                        <div class="metric-card-secondary">
+                            <div class="metric-label">SEMANTIC SIMILARITY</div>
+                            <div class="metric-value-small">{int(analysis_results['cosine_score'])}%</div>
                         </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
+                    """, unsafe_allow_html=True)
                 
-                # Show an interactive progress bar for the overall score
-                st.markdown("**Overall Fit Progress:**")
-                st.progress(analysis_results['ats_score'] / 100)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div class='panel-title'>SKILL VECTOR BREAKDOWN</div>", unsafe_allow_html=True)
                 
                 # Skills matching breakdowns
-                skills_col1, skills_col2, skills_col3 = st.columns(3)
+                scol1, scol2, scol3 = st.columns(3, gap="medium")
                 
-                with skills_col1:
-                    st.markdown("### 🟢 Matched Skills")
-                    st.markdown(
-                        render_skills_tags(analysis_results['matched_skills'], "#2ecc71"),
-                        unsafe_allow_html=True
-                    )
+                with scol1:
+                    st.markdown(f"""
+                        <div class="skills-card">
+                            <div class="skills-card-title"><span style="color: #48C78E; margin-right: 6px;">✓</span> MATCHED SKILLS</div>
+                            {render_skill_badges(analysis_results['matched_skills'], 'skill-tag-matched')}
+                        </div>
+                    """, unsafe_allow_html=True)
                     
-                with skills_col2:
-                    st.markdown("### 🔴 Missing Skills")
-                    st.markdown(
-                        render_skills_tags(analysis_results['missing_skills'], "#e74c3c"),
-                        unsafe_allow_html=True
-                    )
+                with scol2:
+                    st.markdown(f"""
+                        <div class="skills-card">
+                            <div class="skills-card-title"><span style="color: #E76F51; margin-right: 6px;">✕</span> MISSING SKILLS</div>
+                            {render_skill_badges(analysis_results['missing_skills'], 'skill-tag-missing')}
+                        </div>
+                    """, unsafe_allow_html=True)
                     
-                with skills_col3:
-                    st.markdown("### 🔵 Extra Skills in Resume")
-                    st.markdown(
-                        render_skills_tags(analysis_results['extra_skills'], "#3498db"),
-                        unsafe_allow_html=True
-                    )
+                with scol3:
+                    st.markdown(f"""
+                        <div class="skills-card">
+                            <div class="skills-card-title"><span style="color: #F2B897; margin-right: 6px;">+</span> ADDITIONAL SKILLS</div>
+                            {render_skill_badges(analysis_results['extra_skills'], 'skill-tag-extra')}
+                        </div>
+                    """, unsafe_allow_html=True)
                 
-                st.markdown("<br><hr>", unsafe_allow_html=True)
+                # Gemini AI Insights
+                st.markdown("""
+                    <div style="margin-top: 50px; padding: 40px; background-color: rgba(26, 17, 14, 0.7); backdrop-filter: blur(14px); border: 1px solid rgba(200, 122, 87, 0.35); border-radius: 14px; box-shadow: 0 10px 32px rgba(0,0,0,0.5);">
+                        <span class="hero-badge" style="margin-bottom: 12px;">✦ AI STRATEGIC RECOMMENDATIONS</span>
+                        <div style="color: #C8BFB5; margin-bottom: 30px; font-size: 1.05rem;">Personalized optimization feedback tailored for executive resume screening.</div>
+                """, unsafe_allow_html=True)
                 
-                # Display Gemini feedback
-                st.markdown("<div class='section-header'>🤖 AI Analysis & Recommendations (Gemini API)</div>", unsafe_allow_html=True)
                 st.markdown(ai_suggestions)
+                
+                st.markdown("</div>", unsafe_allow_html=True)

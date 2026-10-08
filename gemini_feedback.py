@@ -34,9 +34,9 @@ def get_gemini_feedback(resume_text, jd_text):
         # 2. Configure the Generative AI library with the API key
         genai.configure(api_key=api_key)
         
-        # 3. Initialize the Gemini 1.5 Flash model
-        # gemini-1.5-flash is optimized for fast responses and high quality.
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        # 3. Initialize the Gemini 3.5 Flash model
+        # gemini-3.5-flash is optimized for fast responses and high quality.
+        model = genai.GenerativeModel("gemini-3.5-flash")
         
         # 4. Construct a clear, structured prompt for the AI
         prompt = f"""
@@ -75,3 +75,32 @@ def get_gemini_feedback(resume_text, jd_text):
     except Exception as e:
         # Return a helpful error message if the API call fails
         return f"### Error getting feedback\nAn error occurred while connecting to the Gemini API: {str(e)}"
+
+def generate_job_description(job_title, experience):
+    """
+    Generates a job description based on the provided title and experience using Gemini API.
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return "API Key Missing. Please provide your Gemini API Key in the sidebar or .env file."
+        
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-3.5-flash")
+        
+        prompt = f"""
+        You are an expert technical recruiter. Please generate a realistic and professional Job Description 
+        for a '{job_title}' with '{experience}' of experience.
+        
+        The job description should include:
+        1. A brief role overview.
+        2. Key Responsibilities.
+        3. Required Skills & Qualifications.
+        
+        Keep it concise, realistic, and formatted in clean plain text or markdown without extra conversational fluff.
+        """
+        
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"Error generating Job Description: {str(e)}"

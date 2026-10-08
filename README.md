@@ -1,110 +1,178 @@
-# AI Resume Analyzer 💼
+# ✦ AI Resume Analyzer — Executive ATS Intelligence 💼
 
-## Brief One Line Summary
-An AI-powered resume evaluation tool that scores resumes against job descriptions using ATS-style keyword matching, semantic similarity, and Google Gemini feedback.
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Google Gemini API](https://img.shields.io/badge/Google%20Gemini-3.5%20Flash-4285F4?logo=googleai&logoColor=white)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
----
-
-## Overview
-This project analyzes an uploaded PDF resume and a job description to estimate how well the resume matches the role. It computes a combined ATS score, identifies matched/missing skills, and offers AI-powered suggestions to improve the resume.
-
-The app is implemented in Python with a Streamlit interface, making it easy to run locally and customize for your own resume review workflow.
+An **AI-powered Executive ATS (Applicant Tracking System) Evaluation Dashboard** built with Python and Streamlit. It scores resumes against job descriptions using structural skill matching, TF-IDF semantic vector similarity, and Google Gemini AI insights.
 
 ---
 
-## Problem Statement
-Job seekers often struggle to tailor their resumes for Applicant Tracking Systems (ATS) and hiring managers. This project addresses that gap by:
+## 🌟 Key Features
 
-- Extracting text from PDF resumes.
-- Comparing resume content with job descriptions.
-- Measuring keyword and semantic alignment.
-- Generating actionable improvement suggestions.
-
----
-
-## Dataset
-This project does not rely on an external dataset. Instead, it uses:
-
-- An uploaded PDF resume.
-- A pasted or uploaded job description.
-
-The app examines the text content of both inputs and computes similarity and skill overlap.
-
----
-
-## Tools and Technologies
-- Python
-- Streamlit
-- pdfplumber
-- pandas
-- scikit-learn
-- google-generativeai (Google Gemini API)
-- python-dotenv
+- **✦ Organic Dark Luxury UI / UX**: Styled with an executive **Warm Espresso & Copper** glassmorphism aesthetic, frosted containers, and soft glowing accents.
+- **📄 PDF Resume Parsing**: Extracts raw text from uploaded multi-page PDF resumes using `pdfplumber`.
+- **🎯 Flexible Job Description Input**:
+  - **Paste Text**: Direct copy-paste of job requirements.
+  - **Upload File**: Supports `.txt` and `.pdf` job description documents.
+  - **Auto-Generate with AI**: Generates targeted, industry-standard job descriptions using Gemini AI based on **Job Title** and **Expected Experience**.
+- **📊 Comprehensive ATS Match Scoring**:
+  - **Overall ATS Score**: Weighted metric combining structural keyword density and semantic vector similarity.
+  - **Keyword Match Percentage**: Measures exact overlap against a curated technical skill dictionary.
+  - **Semantic Similarity Percentage**: Calculates TF-IDF vector cosine similarity to evaluate contextual alignment.
+- **🏷️ Skill Vector Breakdown**:
+  - **✓ Matched Skills**: Core competencies present in both resume and target role.
+  - **✕ Missing Skills**: Crucial qualifications missing from the resume.
+  - **+ Additional Skills**: Bonus qualifications present in the resume.
+- **🤖 Gemini AI Executive Insights**:
+  - Structural rewrite recommendations.
+  - Action verb enhancement suggestions.
+  - Missing skill incorporation strategies.
 
 ---
 
-## Methods
-- **PDF parsing:** `resume_parser.py` extracts text from PDF resumes using `pdfplumber`.
-- **Skill matching:** `ats_score.py` compares resume and job description text against a predefined common skill list.
-- **Semantic scoring:** TF-IDF vectorization and cosine similarity measure how similar the resume and job description are in overall language and context.
-- **AI feedback:** `gemini_feedback.py` sends a structured prompt to Google Gemini to generate suggested missing skills, action verb recommendations, and rewrite suggestions.
+## 🛠️ Technology Stack
+
+| Component | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend Framework** | Streamlit | Responsive web application interface |
+| **Styling & Theme** | Custom CSS (Glassmorphism) | Dark Espresso & Metallic Copper aesthetic |
+| **AI / LLM Engine** | Google Gemini API (`gemini-3.5-flash`) | AI feedback & Job Description generation |
+| **PDF Extraction** | `pdfplumber` | High-fidelity text extraction from PDF documents |
+| **NLP & Vectorization** | `scikit-learn` (`TfidfVectorizer`) | TF-IDF vectorization & Cosine Similarity calculation |
+| **Data Processing** | `pandas` / `numpy` | Data structuring and analytical metrics |
+| **Environment Config** | `python-dotenv` | Secure API key management |
 
 ---
 
-## Key Insights
-- Keyword overlap alone is not enough; semantic similarity improves relevance scoring.
-- AI-generated resume feedback can point out weak bullet points and suggest stronger action verbs.
-- Resumes that mention job-specific skills and domain terminology score higher with this tool.
+## 📐 System Architecture
+
+```mermaid
+flowchart TD
+    A[User PDF Resume] --> B[resume_parser.py]
+    B --> C[Extracted Text]
+    
+    D1[Paste Text] --> E[Job Description Text]
+    D2[Upload File .txt/.pdf] --> E
+    D3[AI Auto-Generator] -->|Gemini 3.5 Flash| E
+    
+    C --> F[ats_score.py]
+    E --> F
+    
+    F --> G1[Keyword Density Score]
+    F --> G2[TF-IDF Cosine Similarity]
+    F --> G3[Skill Vector Analysis]
+    
+    C --> H[gemini_feedback.py]
+    E --> H
+    H -->|Gemini 3.5 Flash| I[AI Strategic Feedback]
+    
+    G1 --> J[Streamlit Executive Dashboard]
+    G2 --> J
+    G3 --> J
+    I --> J
+```
 
 ---
 
-## Dashboard / Model / Output
-The Streamlit app provides:
+## 🚀 Quick Start Guide
 
-- Resume upload input (PDF)
-- Job description input (paste text or upload `.txt/.pdf`)
-- ATS match score
-- Matched, missing, and extra skills
-- Cosine similarity percentage
-- Gemini-generated resume feedback and improvement suggestions
+### Prerequisites
+- Python 3.9 or higher installed.
+- A Google Gemini API Key. Get one from [Google AI Studio](https://aistudio.google.com/).
+
+### 1. Clone & Setup Project
+```bash
+git clone https://github.com/rajendra-codes494/ats-resume-analyzer-python.git
+cd ats-resume-analyzer-python
+```
+
+### 2. Create Virtual Environment
+```bash
+# On Windows PowerShell
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# On Linux / macOS
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure Environment Variables
+Create a `.env` file in the root directory:
+```env
+GEMINI_API_KEY=your_actual_gemini_api_key_here
+```
+*(Note: You can also enter your Gemini API Key directly in the app's sidebar during execution).*
+
+### 5. Launch Application
+```bash
+streamlit run app.py
+```
+Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## How to Run this Project
-1. Clone the repository or copy the project files.
-2. Create and activate a Python virtual environment.
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Add your Gemini API key to a `.env` file:
-   ```text
-   GEMINI_API_KEY=your_actual_api_key_here
-   ```
-5. Run the app:
-   ```bash
-   streamlit run app.py
-   ```
-6. Open the provided local URL in your browser.
+## 📂 Project Structure
+
+```text
+Ai Resume analyzer/
+├── .env                  # Environment variables (API Keys)
+├── .gitignore            # Git exclusion rules
+├── app.py                # Main Streamlit dashboard & UI layout
+├── ats_score.py          # Skill extraction & TF-IDF similarity calculation
+├── gemini_feedback.py    # Google Gemini AI integration & JD generator
+├── resume_parser.py      # PDF text extraction utilities
+├── utils.py              # File parsing helper functions (.txt / .pdf)
+├── requirements.txt      # Python dependencies manifest
+└── README.md             # Project documentation
+```
 
 ---
 
-## Results & Conclusion
-This project gives job applicants a straightforward way to evaluate resume fit for a role. It combines:
+## 📝 Usage Workflow
 
-- exact skill and keyword matching,
-- semantic similarity scoring,
-- and AI-driven feedback.
-
-The result is a practical tool for improving resume relevance and tailoring content to specific job descriptions.
+1. **Upload Resume**: Drag and drop your resume in PDF format under `01 UPLOAD RESUME`.
+2. **Select Job Description Mode**:
+   - **Paste Text**: Paste raw job requirements directly.
+   - **Upload File**: Upload job description as `.txt` or `.pdf`.
+   - **Auto-Generate with AI**: Enter **Job Title** and **Expected Experience**, then click **✦ GENERATE JOB DESCRIPTION**.
+3. **Analyze Resume**: Click **✦ ANALYZE RESUME →** to evaluate your match.
+4. **Review Results**:
+   - Inspect the **Overall ATS Match Score**, **Keyword Density**, and **Semantic Similarity**.
+   - Review **Matched**, **Missing**, and **Additional** skills.
+   - Read actionable **AI Strategic Recommendations** powered by Gemini.
 
 ---
 
-## Future Work
-Potential improvements include:
+## ⚙️ Configuration & Model Details
 
-- adding OCR support for scanned resume PDFs,
-- expanding the skill extraction list,
-- supporting multiple resume and job description formats,
-- integrating resume section parsing,
-- storing historical analyses for tracking progress over time.
+The project integrates with the latest Google Gemini model (`gemini-3.5-flash` / `gemini-1.5-flash` with automatic fallback). 
+
+- **Primary Model**: `gemini-3.5-flash`
+- **Fallback Models**: `gemini-1.5-flash`, `gemini-1.5-pro`
+- **Temperature**: `0.7` for balanced, structured feedback.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! If you'd like to improve skill dictionaries, add OCR support, or refine the UI:
+
+1. Fork the Repository.
+2. Create a Feature Branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`).
+4. Push to the Branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.

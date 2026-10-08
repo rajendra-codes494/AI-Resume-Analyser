@@ -1,0 +1,51 @@
+AI Resume Analyzer - Project Explanation
+
+Overview:
+This project is a Python-based resume analysis tool that compares a user-uploaded PDF resume with a job description. It helps job seekers understand how well their resume matches the job by using keyword matching, semantic similarity, and AI-powered suggestions.
+
+How it Works:
+1. Resume Upload:
+   - The user uploads a PDF resume through the Streamlit web interface in app.py.
+   - The app extracts resume text from the PDF using pdfplumber in resume_parser.py.
+
+2. Job Description Input:
+   - The user can paste the job description text or upload a .txt or .pdf file.
+   - If a file is uploaded, utils.py extracts text from the file and returns it to the app.
+
+3. ATS Scoring and Skill Matching:
+   - ats_score.py defines a common skills list and checks both resume and job description text for these skills.
+   - It identifies matched skills, missing skills, and extra skills in the resume.
+   - It also calculates a semantic similarity score using TF-IDF vectorization and cosine similarity from scikit-learn.
+   - The final ATS score is computed from 60% skill keyword overlap and 40% general semantic similarity.
+
+4. AI Feedback with Google Gemini:
+   - gemini_feedback.py connects to the Google Gemini API using an API key stored in .env or entered via the app.
+   - It sends the resume and job description to Gemini with a detailed prompt requesting:
+     - suggested missing skills
+     - weak resume points and improvements
+     - action verb recommendations
+     - overall alignment feedback
+
+5. Streamlit Interface:
+   - app.py provides the user interface and controls the flow:
+     - file upload, job description input, and analyze button.
+     - validation of inputs.
+     - display of scores, matched/missing skills, and Gemini feedback.
+
+Technology Stack:
+- Python: main programming language.
+- Streamlit: web app interface.
+- pdfplumber: PDF text extraction.
+- scikit-learn: TF-IDF and cosine similarity analysis.
+- google-generativeai: Google Gemini API client.
+- python-dotenv: loads environment variables from .env.
+
+Usage:
+1. Install dependencies from requirements.txt.
+2. Add your Gemini API key to a .env file as GEMINI_API_KEY.
+3. Run the app with: streamlit run app.py
+4. Upload a resume PDF and provide a job description.
+5. Click Analyze Resume to see the score and suggestions.
+
+Purpose:
+The tool makes it easier to tailor resumes for ATS and recruiters by revealing skill gaps, highlighting matching terms, and offering AI-assisted resume improvement suggestions.
